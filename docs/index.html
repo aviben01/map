@@ -43,31 +43,6 @@
                     console.log(response)
                     govmap.zoomToXY({ x: response.data[0].X, y: response.data[0].Y, level: 6, marker: false });
                 }); 
-                govmap.setVisibleLayers(visibleLayers, []);
-
-                // govmap.filterLayers(params ={ 
-                //     layerName: 'TEMP_BRIDGE',
-                //     // whereClause: 'objectid <= 1000.0',
-                //     // whereClause: "code in ('S-BRG-11437800', 'S-BRG-11438000', 'S-SGR-11441400')",
-                //     // whereClause: "road in ('4')",
-                //     // whereClause: "direction == 'עולה'",
-                //     whereClause: "road_height < 6.50",
-                //     zoomToExtent: false
-                // }).then(function (response)  
-                // {  
-                //     console.log(response);
-                // });     
-
-                govmap.getLayerData({LayerName: 'TEMP_BRIDGE', Point: {x: 685296, y: 190042}, Radius: 10000}).then(function (response)  
-            {  
-                console.log("Data", response);
-            });     
-
-            govmap.getLayerEntities({layerName: 'TEMP_BRIDGE'}).then(function (response)  
-            {  
-                console.log("Entities", response);
-            });     
-
         });
 
         function go() { 
@@ -110,9 +85,7 @@
             console.log("Filter by truck height " + document.getElementById('truckHeight').value + "m");
             govmap.filterLayers(params ={ 
                 layerName: 'TEMP_BRIDGE',
-                whereClause: 'objectid <= 500',
-                // whereClause: "code in ('S-BRG-11437800', 'S-BRG-11438000', 'S-SGR-11441400')",
-                // whereClause: "height < " + document.getElementById('truckHeight').value,
+                whereClause: "VERT_GAP < " + document.getElementById('truckHeight').value,
                 zoomToExtent: false
             }).then(function (response)  
             {  
