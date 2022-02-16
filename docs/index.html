@@ -1,117 +1,19 @@
 <head>
+    <meta name=viewport content="width=device-width, initial-scale=1">
+
     <script src="https://code.jquery.com/jquery-1.12.1.min.js"></script>
     <script src="https://www.govmap.gov.il/govmap/api/govmap.api.js"></script>
-    <script src="https://rawgit.com/jieter/Leaflet.encoded/master/Polyline.encoded.js"></script>
+    <script src="scripts/map.js"></script>
 
-    <script type="text/javascript">
-        $(document).ready(function ()
-        {
-            //var token = "5a4b8472-b95b-4687-8179-0ccb621c7990";//localhost
-            //var token = "0fff9694-a045-4ede-b997-ee9927b0d56c";//govmap
-            var token ='aafedfe5-8dfa-4fd5-9af9-8b95759447bd'; // github
-
-		
-            var avaliableLayers = [
-                "GASSTATIONS", 						// תחנות דלק
-                "BUS_STOPS", 						// תחנות אוטובוס
-                "MILESTONES",						// אבני ק"מ - כללי
-                "CARPARKS",							// חניונים
-                "NATAZ_KAYAM", 						// נת"צ קיים 
-                "MASHLIMA2023",						// נתיבי העדפה
-                "TRAFFIC_LIGHT_JUNCTION", 			// צמתים מרומזרים
-                "TUNNELS", 							// מנהרות
-                "TEMP_BRIDGE",						// גשרים - הטיטאנים 1735
-            ];
-            var visibleLayers = [
-                "GASSTATIONS", 						// תחנות דלק
-                "TUNNELS", 							// מנהרות
-                "TEMP_BRIDGE",						// גשרים - הטיטאנים 1735
-            ];
-
-            govmap.createMap('map', 
-                {
-                    token: token,
-                    visibleLayers: visibleLayers,  
-                    layers: avaliableLayers,
-                    showXY: true,  
-                    identifyOnClick:true,
-                    layersMode: 2,
-                    zoomButtons:true
-                });
-                govmap.geocode({keyword: 'מחלף דרור', type: govmap.geocodeType.AccuracyOnly}
-                ).then(function(response){
-                    console.log(response)
-                    govmap.zoomToXY({ x: response.data[0].X, y: response.data[0].Y, level: 6, marker: false });
-                }); 
-        });
-
-        function go() { 
-            var from, to;
-            govmap.geocode({keyword: document.getElementById('originAddress').value, type: govmap.geocodeType.AccuracyOnly}).then(function(response){
-                console.log("origin: ", response)
-                let from = response.data[0]
-
-                govmap.geocode({keyword: document.getElementById('destinationAddress').value, type: govmap.geocodeType.AccuracyOnly}).then(function(response){
-                    console.log("destination: ", response)
-                    let to = response.data[0]
-
-                    console.log("display geopmetries: ", from, to);
-                    govmap.displayGeometries({
-                        wkts: ['POINT('+from.X+ ' '+ from.Y+')', 'POINT('+to.X+ ' '+ to.Y+')'],
-                        names: ['מוצא', 'יעד'],
-                        geometryType: govmap.drawType.Point,
-                        defaultSymbol: { 'url':'https://www.waze.com/livemap/assets/pin-9ad4ceb21a2449b4d0bcacdcf464f015.png', 'width':35, 'height':38 },
-                        clearExisting: true,
-                        data: { 
-                            tooltips: ["מוצא: " + from.ResultLable, "יעד: " + to.ResultLable],
-                        }
-                    }).then(function (e) {
-                    });
-
-                    console.log("zoom")
-                    govmap.zoomToXY({ 
-                        x: (from.X + to.X)/2, 
-                        y: (from.Y + to.Y)/2, 
-                        level: calc_zoom_level(from, to), 
-                        marker: false }
-                    ).then(function (e) {
-                    });
-
-                });
-
-            }); 
-
-
-            console.log("Filter by truck height " + document.getElementById('truckHeight').value + "m");
-            govmap.filterLayers(params ={ 
-                layerName: 'TEMP_BRIDGE',
-                whereClause: "VERT_GAP < " + document.getElementById('truckHeight').value,
-                zoomToExtent: false
-            }).then(function (response)  
-            {  
-                console.log(response);
-            });     
-        };
-
-        function calc_zoom_level(from, to) {
-			radius = Math.floor(Math.max.apply(Math, [Math.abs(from.X - to.X), Math.abs(from.Y - to.Y)]))
-			lvl = 7;    
-            zoomLevelRadius = [220000, 100000, 50000, 25000, 10000, 5000, 1000];
-            for (let i = 0; i < zoomLevelRadius.length; i++){
-                if (radius > zoomLevelRadius[i]) {
-                    lvl = i;
-                    break;
-                }
-            }
-            console.log(radius, lvl);
-            return lvl;
-        }
-
-   </script>
 </head>
-<body dir="rtl">
-    <div id=app style="width: 70%; height: 85%; margin: auto; ">
-        <div id="controls" style="padding: 0.5cm; padding-bottom: 0em; background:teal; color: white; ">
+<body dir="rtl" onload="init_map('map', 'מחלף דרור')">
+    <div id=app style="height: 80%; width: 90%; margin: auto;">
+        <div id="logos" style="padding: 0.2cm; text-align: center; display: block">
+            <img style="height: 1.2cm; " src="images/hazav.png"/>
+            <img style="height: 1.7cm; margin-left: 3cm; margin-right: 3cm;" src="images/titans.png"/>
+            <img style="height: 1.2cm; " src="images/first.png"/>
+        </div>
+        <div id="controls" style="padding: 0.5cm; padding-bottom: 0; background:teal; color: white;">
             <span>
                 <label for="originAddress">מוצא:</label>
                 <input id="originAddress" type="text" value="מחלף דרור"/>
@@ -122,15 +24,15 @@
             </span>
             <span>
                 <label for="truckHeight">גובה המשאית:</label>
-                <input id="truckHeight" type="number" value='4.8'/>
+                <input id="truckHeight" type="number" value='4.8' step="0.1"/>
             </span>
             <span>
                 <button onclick="go()">בצע</button>
+                <button onclick="reset_map()">איפוס</button>
             </span>
         </div>
-
         <div id="map" style="padding: 0.5cm; background:teal;">
-        </div>
+    </div>
  
 </body>
 </html>
